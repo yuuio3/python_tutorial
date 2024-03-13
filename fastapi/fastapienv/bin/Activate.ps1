@@ -1,4 +1,4 @@
-<#
+/workspaces/python_tutorial/fastapi/fastapienv/bin/python3.10<#
 .Synopsis
 Activate a Python virtual environment for the current PowerShell session.
 
