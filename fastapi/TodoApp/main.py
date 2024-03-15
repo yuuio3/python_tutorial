@@ -2,19 +2,22 @@ from typing import Annotated
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, HTTPException, Depends, Path
+
 import models
+from database import Base
 from models import Todos
 from starlette import status
 
 from database import engine, SessionLocal
 
 # from routers import auth, todos, admin, users
+from routers import auth
 
 app = FastAPI()
 
 models.Base.metadata.create_all(bind=engine)
 
-# app.include_router(auth.router)
+app.include_router(auth.router)
 # app.include_router(todos.router)
 # app.include_router(admin.router)
 # app.include_router(users.router)
@@ -56,3 +59,13 @@ async def post_todo(db: db_dependency, todo_request: TodoRequest):
     todo_model = Todos(**todo_request.model_dump())
     db.add(todo_model)
     db.commit()
+
+
+@app.delete("/to/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_todo(db: db_dependency, todo_id: int = Path(gt=0)):
+    todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
+    if todo_model is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    else:
+        db.query(Todos).filter(Todos.id == todo_id).delete()
+        db.commit()
